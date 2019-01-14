@@ -3,9 +3,7 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-4 sidebar">
-                    <h2 class="text-light">Slack(...like)</h2>
-                    <hr style="border: 1px solid #ccc">
-                    <button class="btn btn-outline-light" @click = "clickToLogout">Logout</button>
+                    <app-sidebar></app-sidebar>
                 </div>
                 <div class="col-md-8 content">
                     content
@@ -17,9 +15,13 @@
 
 <script>
 //import auth from 'firebase/auth'
+import Sidebar from '@/components/Sidebar.vue'
 
 export default {
     name: 'chat',
+    components: {
+        "app-sidebar": Sidebar
+    },
     methods: {
         clickToLogout() {
             firebase.auth().signOut()

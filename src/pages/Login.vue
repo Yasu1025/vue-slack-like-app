@@ -39,12 +39,14 @@
 
 <script>
 import auth from 'firebase/auth'
+import database from 'firebase/database'
 export default {
     name: 'login',
     data() {
         return {
             errors: [],
-            isLoading: false
+            isLoading: false,
+            usersRef: firebase.database().ref('users')
         }
     },
 
@@ -60,6 +62,8 @@ export default {
             this.errors = []
             firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
                 .then(res => {
+                    // save in DB
+                    this.saveUserToUsersRef(res.user)
                     // dispatch login action
                     this.$store.dispatch('setUser', res.user)
                     this.$router.push('/')
@@ -69,6 +73,13 @@ export default {
                     this.errors.push(e.message)
                     this.isLoading = false
                 })
+        },
+        saveUserToUsersRef(user) {
+            const data = {
+                name: user.displayName,
+                avatar: user.photoURL
+            }
+            return this.usersRef.child(user.uid).set(data)
         }
     }
 }
