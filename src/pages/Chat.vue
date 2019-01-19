@@ -6,7 +6,7 @@
                     <app-sidebar></app-sidebar>
                 </div>
                 <div class="col-md-8 content">
-                    content
+                    <app-messages></app-messages>
                 </div>
             </div>
         </div>
@@ -15,12 +15,14 @@
 
 <script>
 //import auth from 'firebase/auth'
-import Sidebar from '@/components/Sidebar.vue'
+import Sidebar from '@/components/sidebar/Sidebar.vue'
+import Messages from '@/components/messages/Messages.vue'
 
 export default {
     name: 'chat',
     components: {
-        "app-sidebar": Sidebar
+        "app-sidebar": Sidebar,
+        'app-messages': Messages
     },
     methods: {
         clickToLogout() {

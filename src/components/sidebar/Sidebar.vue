@@ -10,18 +10,22 @@
         <button class="btn btn-outline-light" @click = "clickToLogout">Logout</button>
         <hr style="border: 1px solid #ccc">
         <app-channels></app-channels>
+        <hr style="border: 1px solid #ccc">
+        <app-users></app-users>
     </div>
 </template>
 
 <script>
 //import auth from 'firebase/auth'
 import { mapGetters } from 'vuex'
-import Channels from './Channels'
+import Channels from './Channels.vue'
+import Users from './Users.vue'
 
 export default {
     name: 'sidebar',
     components: {
-        'app-channels': Channels
+        'app-channels': Channels,
+        'app-users': Users
     },
     computed: {
       ...mapGetters (['currentUser']) 
