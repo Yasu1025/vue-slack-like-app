@@ -16,13 +16,18 @@
 </template>
 
 <script>
-//import auth from 'firebase/auth'
+import database from 'firebase/database'
 import { mapGetters } from 'vuex'
 import Channels from './Channels.vue'
 import Users from './Users.vue'
 
 export default {
     name: 'sidebar',
+    data() {
+        return {
+            presenceRef: firebase.database().ref('presence')
+        }
+    },
     components: {
         'app-channels': Channels,
         'app-users': Users
@@ -32,6 +37,7 @@ export default {
     },
     methods: {
         clickToLogout() {
+            this.presenceRef.child(this.currentUser.uid).remove()
             firebase.auth().signOut()
             this.$store.dispatch('setUser', null)
             this.$router.push('/login')

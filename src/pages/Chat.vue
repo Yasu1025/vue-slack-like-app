@@ -51,6 +51,7 @@ export default {
     display: block;
     float: left;
     margin-left: 34%;
+    padding-bottom: 80px;
 }
 </style>
 

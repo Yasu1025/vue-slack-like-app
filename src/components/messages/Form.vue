@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="msg-form">
-            <form>
+            <form @submit.prevent = "clickToSend" >
                 <div class="input-group mb-3">
                     <input type="text"
                            id="message"
@@ -54,9 +54,11 @@ export default {
                 if(this.msg.length > 0) {
                     // push() creates unique key
                     // push to existed channel
-                    this.$parent.messagesRef.child(this.currentChannel.id).push().set(newMsg)
+                    this.$parent.getMsgRef().child(this.currentChannel.id).push().set(newMsg)
                         .then(() => {
-
+                            this.$nextTick(() => {
+                                $("html, body").scrollTop($(document).height())
+                            })
                         })
                         .catch((e) => {
                             this.errors.push(e.message)
