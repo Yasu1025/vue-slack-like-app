@@ -1,5 +1,6 @@
 <template>
     <div>
+        <h2>{{ channelName }}</h2>
         <app-single-msg :messages = "messages"></app-single-msg>
         <app-msg-form></app-msg-form>
     </div>
@@ -22,15 +23,22 @@ export default {
             messagesRef: firebase.database().ref('messages'),
             privateMsgRef: firebase.database().ref('privateMessages'),
             messages: [],
-            channel: ''
+            channel: null,
+            listners: []
         }
     },
     computed: {
-        ...mapGetters(['currentChannel', 'currentUser', 'isPrivate'])
+        ...mapGetters(['currentChannel', 'currentUser', 'isPrivate']),
+        channelName() {
+            if(this.channel !== null) {
+                return this.isPrivate ? '@ ' + this.channel.name : '# ' + this.channel.name 
+            }
+        }
     },
     watch: {
         currentChannel: function() {
-            this.messages = []
+            //this.messages = []
+            this.detachListner()
             this.addListner()
             this.channel = this.currentChannel
         }
@@ -47,11 +55,9 @@ export default {
                                 $("html, body").scrollTop($(document).height())
                             })
             })
-        },
-        detachListner() {
-            if(this.channel !== null) {
-                this.messagesRef.child(this.channel.id).off()
-            }
+            // pass arg to method
+            this.addToListners(this.currentChannel.id, ref, 'child_added') 
+
         },
         getMsgRef() {
             if(this.isPrivate) {
@@ -59,6 +65,25 @@ export default {
             } else {
                 return this.messagesRef
             }
+        },
+        addToListners(id, ref, event) {
+            let index = this.listners.findIndex(el => {
+                return el.id === id && el.ref === ref && el.event === event
+            })
+
+            if(index === -1) {
+                this.listners.push({id: id, ref: ref, event: event})
+            }
+        },
+        detachListner() {
+            this.listners.forEach(listner => {
+                listner.ref.child(listner.id).off(listner.event)
+            })
+            this.listners = []
+            this.messages = []
+            // if(this.channel !== null) {
+            //     this.messagesRef.child(this.channel.id).off()
+            // }
         }
     },
     beforeDestroy() {
