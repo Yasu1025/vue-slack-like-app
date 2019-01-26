@@ -7,7 +7,10 @@
                 :class = "{'active': setActiveChannel(channel)}"
                 v-for = "channel in channels" :key = "channel.id"
                 type="button"
-                @click = "clickToChangeCh(channel)">{{ channel.name }}</button>
+                @click = "clickToChangeCh(channel)">
+                {{ channel.name }}
+                <span v-if = "getNotification(channel.id) > 0 && channel.id !== currentChannel.id" class="float-right">{{ getNotification(chennel.id) }}</span>
+            </button>
         </div>
         <!-- Modal -->
         <div class="modal fade" id="channelModal">
@@ -47,6 +50,7 @@
 <script>
 import database from 'firebase/database'
 import { mapGetters } from 'vuex'
+import mixin from '../../mixin'
 
 export default {
     name: 'channels',
@@ -55,14 +59,23 @@ export default {
             newChannel: '',
             errors: [],
             channelRef: firebase.database().ref('channels'),
+            messageRef: firebase.database().ref('messages'),
+            noticeCount: [],
             channels: [],
-            currentCh: null
-        }
+            channel: null        }
     },
     computed: {
-        ...mapGetters(['currentChannel']),
+        ...mapGetters(['currentChannel', 'isPrivate']),
         hasError() {
             return this.errors.length > 0
+        }
+    },
+    mixins: [mixin],
+    watch: {
+        isPrivate() {
+            if(this.isPrivate) {
+                this.resetNotifications()
+            }
         }
     },
     methods: {
@@ -78,6 +91,7 @@ export default {
             }
             this.channelRef.child(key).update(newChannel)
                 .then(() => {
+                    this.$store.dispatch("setCurrentChannel", newChannel)
                     this.newChannel = ''
                     $('#channelModal').modal('hide')
                 })
@@ -94,12 +108,28 @@ export default {
 
                 // set current
                 if(this.channels.length > 0) {
-                    this.currentCh = this.channels[0]
+                    this.channel = this.channels[0]
                     // dispatch
-                    this.$store.dispatch('setCurrentChannel', this.currentCh)
+                    this.$store.dispatch('setCurrentChannel', this.channel)
+                }
+                this.addCountListner(snapshot.key)
+            })
+            
+
+        },
+        addCountListner(chId) {
+            this.messageRef.child(chId).on('value', snapshot => {
+                this.handleNoticeCount(chId, this.currentChannel.id, this.noticeCount, snapshot)
+            })
+        },
+        getNotification(chId) {
+            let notice = 0
+            this.noticeCount.forEach(el => {
+                if(el.id === chId) {
+                    notice = el.notice
                 }
             })
-
+            return notice
         },
         setActiveChannel(channel) {
             return channel.id === this.currentChannel.id
@@ -107,10 +137,26 @@ export default {
         detachListner() {
             // off stop listening
             this.channelRef.off()
+            this.channels.forEach(el => {
+                this.messageRef.child(el.id).off()
+            })
         },
         clickToChangeCh(channel) {
+            // reset notifications
+            this.resetNotifications()
             this.$store.dispatch('setPrivate', false)
             this.$store.dispatch('setCurrentChannel', channel)
+            // set ch
+            this.channel = channel
+        },
+        resetNotifications() {
+            let index = this.noticeCount.findIndex(el => el.id === this.channel.id)
+            
+            if(index !== -1) {
+                this.noticeCount[index].total = this.noticeCount[index].lastKnownTotal
+                this.noticeCount[index].notice = 0
+            }
+
         }
     },
     mounted() {
