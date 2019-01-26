@@ -9,6 +9,7 @@
 <script>
 import Form from './Form.vue'
 import SingleMessage from './SingleMessage.vue'
+
 import database from 'firebase/database'
 import { mapGetters } from 'vuex'
 
@@ -88,6 +89,9 @@ export default {
     },
     beforeDestroy() {
         this.detachListner()
+    },
+    mounted() {
+        $("html, body").scrollTop($(document).height())
     }
 }
 </script>
